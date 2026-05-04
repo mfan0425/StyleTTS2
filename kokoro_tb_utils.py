@@ -15,20 +15,20 @@ import torchaudio
 
 logger = logging.getLogger(__name__)
 
-# German phonetic test sentences — same set as scripts/test_inference.py
+# American English phonetic test sentences
 TEST_SENTENCES = [
-    "Schön, dass du da bist. Die Bücher liegen auf dem großen Tisch.",
-    "Ich mache mich auf den Weg nach Aachen, um auch nachts wach zu sein.",
-    "Er aß die Maße in der Straße, aber das Maß war voll.",
-    "Zwei weiße Zwerge zwängen sich zwischen zwei Zweige.",
-    "Ein Pfau pflegt seine Federn an der Pfütze.",
-    "Warum hast du das getan? Das ist ja unglaublich!",
-    "Das kostet genau einhundertdreiundzwanzig Millionen Euro.",
+    "The quick brown fox jumps over the lazy dog.",
+    "Printing, in the only sense with which we are at present concerned, differs from most arts.",
+    "Why did you do that? That is absolutely incredible!",
+    "The total cost is exactly one hundred twenty-three million dollars.",
+    "She sells seashells by the seashore.",
+    "Are you serious right now? I can't believe it!",
+    "A swift red fox gracefully cleared the sleeping dog."
 ]
 
 
 def prepare_test_tokens(text_cleaner):
-    """Convert German test sentences to token ID lists via espeak G2P.
+    """Convert English test sentences to token ID lists via espeak G2P.
 
     Returns a list of (display_text, token_ids) tuples. Sentences that
     fail G2P or produce sequences longer than 510 tokens are skipped.
@@ -36,7 +36,7 @@ def prepare_test_tokens(text_cleaner):
     try:
         from misaki import espeak
 
-        g2p = espeak.EspeakG2P(language="de")
+        g2p = espeak.EspeakG2P(language="en-us")
     except Exception as e:
         logger.warning(f"Could not load German G2P for TensorBoard inference: {e}")
         return []
