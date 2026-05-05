@@ -38,7 +38,7 @@ def prepare_test_tokens(text_cleaner):
 
         g2p = espeak.EspeakG2P(language="en-us")
     except Exception as e:
-        logger.warning(f"Could not load German G2P for TensorBoard inference: {e}")
+        logger.warning(f"Could not load EN-US G2P for TensorBoard inference: {e}")
         return []
 
     result = []
