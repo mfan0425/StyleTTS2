@@ -164,7 +164,7 @@ def main(config_path):
             first_stage_path = osp.join(
                 log_dir, config.get("first_stage_path", "first_stage.pth")
             )
-            print("Loading the first stage model at %s ..." % first_stage_path)
+            logger.info(f"Loading the first stage model at {first_stage_path} ...")
             model, _, start_epoch, iters = load_checkpoint(
                 model,
                 None,
