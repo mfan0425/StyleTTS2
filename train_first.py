@@ -6,6 +6,7 @@ import yaml
 import shutil
 import numpy as np
 import torch
+import glob
 
 if getattr(torch, "_original_load", None) is None:
     torch._original_load = torch.load
@@ -178,8 +179,23 @@ def main(config_path):
         optimizer.optimizers[k] = accelerator.prepare(optimizer.optimizers[k])
         optimizer.schedulers[k] = accelerator.prepare(optimizer.schedulers[k])
 
+
+    
     with accelerator.main_process_first():
-        if config.get("pretrained_model", "") != "":
+        existing_checkpoints = glob.glob(osp.join(log_dir, "epoch_1st_*.pth"))
+        
+        if len(existing_checkpoints) > 0:
+            # Sort them alphabetically/numerically and grab the very last one
+            latest_checkpoint = sorted(existing_checkpoints)[-1]
+            logger.info(f"Training Resume: Found existing Stage 1 checkpoint! Resuming from {latest_checkpoint}...")
+            model, optimizer, start_epoch, iters = load_checkpoint(
+                model,
+                optimizer,
+                latest_checkpoint,
+                load_only_params=False
+            )    
+        elif config.get("pretrained_model", "") != "":
+            logger.info(f"Starting fresh from base model: {config['pretrained_model']}")
             model, optimizer, start_epoch, iters = load_checkpoint(
                 model,
                 optimizer,
@@ -187,6 +203,7 @@ def main(config_path):
                 load_only_params=config.get("load_only_params", True),
             )
         else:
+            logger.info("Starting training completely from scratch (Epoch 0)")
             start_epoch = 0
             iters = 0
 

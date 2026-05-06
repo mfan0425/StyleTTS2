@@ -6,6 +6,7 @@ import time
 from munch import Munch
 import numpy as np
 import torch
+import glob
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -240,19 +241,33 @@ def main(config_path):
             g["weight_decay"] = 1e-4
 
     # load models if there is a model
-    if load_pretrained:
+    existing_checkpoints = glob.glob(osp.join(log_dir, "epoch_2nd_*.pth"))
+
+    if len(existing_checkpoints) > 0:
+        # Sort them and grab the very last one
+        latest_checkpoint = sorted(existing_checkpoints)[-1]
+        logger.info(f"Training Resume: Found existing Stage 2 checkpoint! Resuming from {latest_checkpoint}...")
+        model, optimizer, start_epoch, iters = load_checkpoint(
+            model,
+            optimizer,
+            latest_checkpoint,
+            load_only_params=False
+        )
+        _ = [model[key].train() for key in model]
+        # Note: We do NOT deepcopy the predictor_encoder here because the Spot checkpoint 
+        # already contains the fully trained Stage 2 predictor_encoder weights!
+
+    # 2. STANDARD START: Load pretrained Stage 2 base if NOT a spot resume
+    elif load_pretrained:
+        logger.info(f"Loading pretrained Stage 2 base: {config['pretrained_model']}")
         model, optimizer, start_epoch, iters = load_checkpoint(
             model,
             optimizer,
             config["pretrained_model"],
             load_only_params=config.get("load_only_params", True),
         )
-        # Ensure all modules are in train() mode after loading
-        # (load_checkpoint sets them to eval(), which breaks spectral_norm)
         _ = [model[key].train() for key in model]
-
         # Initialize predictor_encoder from trained style_encoder
-        # (predictor_encoder is not trained in Stage 1)
         model.predictor_encoder = copy.deepcopy(model.style_encoder)
 
     # DP — must happen AFTER load_checkpoint so state dict keys match
