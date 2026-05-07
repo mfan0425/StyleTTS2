@@ -1,3 +1,4 @@
+from logging import config
 import os
 import os.path as osp
 from pyexpat import model
@@ -253,6 +254,7 @@ def main(config_path):
         _ = [model[key].train() for key in model]
     # ─────────────────────────────────────────────────────────────────────────
 
+    logger.info("Freezing Kokoro modules for Stage 1 training...")
     kokoro_modules = ['bert', 'bert_encoder', 'predictor', 'text_encoder', 'decoder']
     for module_name in kokoro_modules:
         for param in model[module_name].parameters():
