@@ -1,9 +1,11 @@
 import os
 import os.path as osp
+from pyexpat import model
 import re
 import sys
 import yaml
 import shutil
+from kokoro.kokoro import model
 import numpy as np
 import torch
 import glob
@@ -178,8 +180,6 @@ def main(config_path):
     for k, v in optimizer.optimizers.items():
         optimizer.optimizers[k] = accelerator.prepare(optimizer.optimizers[k])
         optimizer.schedulers[k] = accelerator.prepare(optimizer.schedulers[k])
-
-
     
     with accelerator.main_process_first():
         existing_checkpoints = glob.glob(osp.join(log_dir, "epoch_1st_*.pth"))
@@ -203,7 +203,7 @@ def main(config_path):
                 load_only_params=config.get("load_only_params", True),
             )
         else:
-            logger.info("Starting training completely from scratch (Epoch 0)")
+            print("Starting training completely from scratch (Epoch 0)")
             start_epoch = 0
             iters = 0
 
@@ -253,11 +253,20 @@ def main(config_path):
         _ = [model[key].train() for key in model]
     # ─────────────────────────────────────────────────────────────────────────
 
+    kokoro_modules = ['bert', 'bert_encoder', 'predictor', 'text_encoder', 'decoder']
+    for module_name in kokoro_modules:
+        for param in model[module_name].parameters():
+            param.requires_grad = False  # Completely locks the weights!
+            
     for epoch in range(start_epoch, epochs):
         running_loss = 0
         start_time = time.time()
 
         _ = [model[key].train() for key in model]
+
+        # 2. Force Kokoro modules into eval mode (Disables Dropout/BatchNorm)
+        for module_name in kokoro_modules:
+            model[module_name].eval()
 
         for i, batch in enumerate(train_dataloader):
             waves = batch[0]
@@ -411,9 +420,9 @@ def main(config_path):
 
             accelerator.backward(g_loss)
 
-            optimizer.step("text_encoder")
+            #optimizer.step("text_encoder")
             optimizer.step("style_encoder")
-            optimizer.step("decoder")
+            #optimizer.step("decoder")
 
             if epoch >= TMA_epoch:
                 optimizer.step("text_aligner")
