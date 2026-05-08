@@ -346,6 +346,13 @@ def main(config_path):
     _ = [model[key].train() for key in model]
     # ─────────────────────────────────────────────────────────────────────────
 
+    # ── FREEZE KOKORO MODULES BEFORE TRAINING ────────────────────────────────
+    kokoro_modules = ['bert', 'bert_encoder', 'predictor', 'text_encoder', 'decoder']
+    for module_name in kokoro_modules:
+        for param in model[module_name].parameters():
+            param.requires_grad = False  # Completely locks the base Kokoro weights!
+    # ─────────────────────────────────────────────────────────────────────────
+
     for epoch in range(start_epoch, epochs):
         running_loss = 0
         start_time = time.time()
@@ -353,6 +360,10 @@ def main(config_path):
         _ = [model[key].eval() for key in model]
 
         _ = [model[key].train() for key in model]
+
+        # Force Kokoro modules back into eval mode
+        for module_name in kokoro_modules:
+            model[module_name].eval()
 
         if epoch >= joint_epoch:
             start_ds = True
@@ -634,9 +645,9 @@ def main(config_path):
             running_loss += loss_mel.item()
             g_loss.backward()
 
-            optimizer.step("bert_encoder")
-            optimizer.step("bert")
-            optimizer.step("predictor")
+            #optimizer.step("bert_encoder")
+            #optimizer.step("bert")
+            #optimizer.step("predictor")
             optimizer.step("predictor_encoder")
 
             if epoch >= diff_epoch:
@@ -644,7 +655,7 @@ def main(config_path):
 
             if epoch >= joint_epoch:
                 optimizer.step("style_encoder")
-                optimizer.step("decoder")
+                #optimizer.step("decoder")
 
                 # randomly pick whether to use in-distribution text
                 if np.random.rand() < 0.5:
@@ -711,9 +722,9 @@ def main(config_path):
                     if p.grad is not None:
                         p.grad *= slmadv_params.scale
 
-                optimizer.step("bert_encoder")
-                optimizer.step("bert")
-                optimizer.step("predictor")
+                #optimizer.step("bert_encoder")
+                #optimizer.step("bert")
+                #optimizer.step("predictor")
                 optimizer.step("diffusion")
 
                 # SLM discriminator loss
