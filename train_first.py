@@ -1,12 +1,10 @@
 from logging import config
 import os
 import os.path as osp
-from pyexpat import model
 import re
 import sys
 import yaml
 import shutil
-from kokoro.kokoro import model
 import numpy as np
 import torch
 import glob
