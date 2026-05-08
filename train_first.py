@@ -1,4 +1,3 @@
-from logging import config
 import os
 import os.path as osp
 import re
