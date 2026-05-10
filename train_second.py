@@ -166,6 +166,7 @@ def main(config_path):
                 log_dir, config.get("first_stage_path", "first_stage.pth")
             )
             logger.info(f"Loading the first stage model at {first_stage_path} ...")
+            print(f"Loading the first stage model at {first_stage_path} ...")
             model, _, start_epoch, iters = load_checkpoint(
                 model,
                 None,
@@ -247,6 +248,7 @@ def main(config_path):
         # Sort them and grab the very last one
         latest_checkpoint = sorted(existing_checkpoints)[-1]
         logger.info(f"Training Resume: Found existing Stage 2 checkpoint! Resuming from {latest_checkpoint}...")
+        print(f"Loading Stage 2 checkpoint from {latest_checkpoint} ...")
         model, optimizer, start_epoch, iters = load_checkpoint(
             model,
             optimizer,
