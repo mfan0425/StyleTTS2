@@ -363,8 +363,9 @@ def main(config_path):
 
         _ = [model[key].train() for key in model]
 
-        # Force Kokoro modules back into eval mode
-        for module_name in kokoro_modules:
+        # Force Kokoro modules back into eval mode (EXCEPT the predictor!)
+        eval_modules = ['bert', 'bert_encoder', 'text_encoder', 'decoder']
+        for module_name in eval_modules:
             model[module_name].eval()
 
         if epoch >= joint_epoch:
