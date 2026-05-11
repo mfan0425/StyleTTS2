@@ -87,6 +87,7 @@ def main(config_path):
     batch_size = config.get("batch_size", 10)
 
     epochs = config.get("epochs_2nd", 200)
+    epoch_leave = config.get("epoch_leave", epochs)  # leave-one-out epoch for ablation (epochs to complete all)
     save_freq = config.get("save_freq", 2)
     log_interval = config.get("log_interval", 10)
     saving_epoch = config.get("save_freq", 2)
@@ -978,9 +979,9 @@ def main(config_path):
         _ = [model[key].train() for key in model]
         # ─────────────────────────────────────────────────────────────────────
 
-        print("Small training test complete. Shutting down safely.")
-        import sys; sys.exit(0)
-
+        if epoch >= epoch_leave:
+            print("Small training test complete. Shutting down safely.")
+            import sys; sys.exit(0)
 
 if __name__ == "__main__":
     main()
