@@ -422,13 +422,9 @@ def main(config_path):
                 d_gt = s2s_attn_mono.sum(axis=-1).detach()
 
                 # compute reference styles
+                ref = None
                 if multispeaker and epoch >= diff_epoch:
                     ref_ss = model.style_encoder(ref_mels.unsqueeze(1))
-                    if s is not None and torch.isnan(s).any():
-                        print("NaN detected in s after s = model.style_encoder(")
-                        import sys
-
-                        sys.exit(1)
                     ref_sp = model.predictor_encoder(ref_mels.unsqueeze(1))
                     ref = torch.cat([ref_ss, ref_sp], dim=1)
 
