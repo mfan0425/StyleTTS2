@@ -186,6 +186,7 @@ def main(config_path):
             # Sort them alphabetically/numerically and grab the very last one
             latest_checkpoint = sorted(existing_checkpoints)[-1]
             logger.info(f"Training Resume: Found existing Stage 1 checkpoint! Resuming from {latest_checkpoint}...")
+            print(f"Training Resume: Found existing Stage 1 checkpoint! Resuming from {latest_checkpoint}...")
             model, optimizer, start_epoch, iters = load_checkpoint(
                 model,
                 optimizer,
@@ -194,6 +195,7 @@ def main(config_path):
             )    
         elif config.get("pretrained_model", "") != "":
             logger.info(f"Starting fresh from base model: {config['pretrained_model']}")
+            print(f"Starting fresh from base model: {config['pretrained_model']}")
             model, optimizer, start_epoch, iters = load_checkpoint(
                 model,
                 optimizer,
